@@ -17,7 +17,7 @@ class Nullable : public DataType {
 typedef PrimitiveType<double> DoubleType;
 typedef PrimitiveType<uint32_t> UInt32Type;
 
-typedef NullableType<DoubleType> NullableDoubleType;
-typedef NullableType<UInt32Type> NullableUInt32Type;
+typedef Nullable<DoubleType> NullableDoubleType;
+typedef Nullable<UInt32Type> NullableUInt32Type;
 
 }
