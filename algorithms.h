@@ -9,7 +9,7 @@ typename T::value_type CalculateSum(Array<T>& arr) {
   typename T::value_type result = 0;
   int32_t length = arr.length();
   for (int32_t i = 0; i < length; i++) {
-    result += arr.get(i, 0);
+    result += arr.safe_get(i, 0);
   }
   return result;
 }
