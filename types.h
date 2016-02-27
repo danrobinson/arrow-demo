@@ -1,3 +1,6 @@
+#ifndef TYPES_H_
+#define TYPES_H_
+
 namespace arrow {
 
 struct DataType {};
@@ -14,7 +17,6 @@ class Nullable : public DataType {
     typedef typename T::value_type value_type;
 };
 
-typedef PrimitiveType<double> DoubleType;
-typedef PrimitiveType<uint32_t> UInt32Type;
-
 }
+
+#endif
