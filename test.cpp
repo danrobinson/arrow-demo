@@ -2,6 +2,8 @@
 #include <sstream>
 #include "algorithms.h"
 #include "take.h"
+#include "take_alt.h"
+
 
 using namespace arrow;
 
@@ -40,15 +42,37 @@ int main()
   IntArray *intArray = new IntArray(intValues, 3);
   NullableIntArray *nullableIntArray = new NullableIntArray(intArray, bitmask2);
 
-  // see builder.h for builder templates
-  // TO ADD
-
+  // see take.h for take implementation
   DoubleArray *result1 = Take(doubArray, intArray);
   NullableDoubleArray *result2 = Take(nullableDoubArray, intArray);
   NullableDoubleArray *result3 = Take(doubArray, nullableIntArray);
   NullableDoubleArray *result4 = Take(nullableDoubArray, nullableIntArray);
 
-  // see take.h for take implementation
+  std::cout << "Take using Nullable<T> template:" << std::endl;
+  std::cout << result1->to_string() << std::endl;
+  std::cout << result2->to_string() << std::endl;
+  std::cout << result3->to_string() << std::endl;
+  std::cout << result4->to_string() << std::endl;
+
+  // ALTERNATE SYSTEM WITHOUT NULL TEMPLATES
+  // see arrays_alt.h and builder_alt.h
+  typedef ArrayAlt<UInt32Type> IntArrayAlt;
+  typedef ArrayAlt<DoubleType> DoubleArrayAlt;
+  bool nullFreeBitmask1[5] = {0, 0, 0, 0, 0};  
+  bool nullFreeBitmask2[3] = {0, 0, 0};  
+
+  DoubleArrayAlt *doubleArrayAlt = new DoubleArrayAlt(doubleValues, nullFreeBitmask1, 5);
+  DoubleArrayAlt *doubleArrayAltWithNulls = new DoubleArrayAlt(doubleValues, bitmask1, 5);
+  IntArrayAlt *intArrayAlt = new IntArrayAlt(intValues, nullFreeBitmask2, 3);
+  IntArrayAlt *intArrayAltWithNulls = new IntArrayAlt(intValues, bitmask2, 3);
+
+  // see take_alt.h for take implementation
+  DoubleArrayAlt *result5 = TakeAlt(doubleArrayAlt, intArrayAlt);
+  DoubleArrayAlt *result6 = TakeAlt(doubleArrayAltWithNulls, intArrayAlt);
+  DoubleArrayAlt *result7 = TakeAlt(doubleArrayAlt, intArrayAltWithNulls);
+  DoubleArrayAlt *result8 = TakeAlt(doubleArrayAltWithNulls, intArrayAltWithNulls);
+
+  std::cout << "Take with alternate implementation:" << std::endl;
   std::cout << result1->to_string() << std::endl;
   std::cout << result2->to_string() << std::endl;
   std::cout << result3->to_string() << std::endl;
