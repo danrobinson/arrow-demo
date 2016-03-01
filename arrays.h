@@ -25,6 +25,8 @@ public:
 
     int32_t length() { return length_; }
 
+    int32_t null_count() { return 0; }
+
     std::string to_string() {
       std::stringstream s;
       s << "Array [";

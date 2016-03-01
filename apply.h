@@ -1,6 +1,5 @@
 #include "builder.h"
 #include "operation.h"
-#include "timer.h"
 
 namespace arrow {
 

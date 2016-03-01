@@ -2,7 +2,6 @@
 #define BUILDER_H_
 
 #include "arrays.h"
-#include "timer.h"
 
 namespace arrow {
 
