@@ -1,4 +1,7 @@
 #include "arrays.h"
+#ifndef BUILDER_H_
+#define BUILDER_H_
+
 
 namespace arrow {
 
@@ -13,10 +16,6 @@ public:
     values_ = new value_type[length];
   }
 
-  void copyAtIndex(Array<T>* array, int32_t index) {
-    add(array->get(index));
-  }
-
   void add(value_type value) {
     values_[offset_++] = value;
   }
@@ -29,6 +28,10 @@ public:
 
   Array<T>* build() {
     return new Array<T>(values_, length_);
+  }
+
+  void step(value_type value) {
+    add(value);
   }
 
 private:
@@ -47,19 +50,6 @@ public:
                                  offset_(0),
                                  childBuilder_(new ArrayBuilder<T>(length)),
                                  nulls_(new bool[length]) {}
-
-  void copyAtIndex(Array<T>* array, int32_t index) {
-    add(array->get(index));
-  }
-
-  void copyAtIndex(Array<Nullable<T> >* array, int32_t index) {
-    if (array->is_null(index)) {
-      add_null();
-    } else {
-      increment_offset();
-      childBuilder_->copyAtIndex(array->child_array(), index);
-    }
-  }
 
   void add(value_type value) {
     nulls_[offset_++] = false;
@@ -82,6 +72,15 @@ public:
   Array<Nullable<T> >* build() {
     return new Array<Nullable<T> >(childBuilder_->build(), nulls_);
   }
+
+  void step(value_type value) {
+    add(value);
+  }
+
+  void skip() {
+    add_null();
+  }
+
 private:
   ArrayBuilder<T>* childBuilder_;
   int32_t length_;
@@ -90,3 +89,5 @@ private:
 };
 
 } // namespace arrow
+
+#endif

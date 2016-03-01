@@ -48,6 +48,8 @@ int main()
   NullableDoubleArray *result3 = Take(doubArray, nullableIntArray);
   NullableDoubleArray *result4 = Take(nullableDoubArray, nullableIntArray);
 
+
+
   std::cout << "Take using Nullable<T> template:" << std::endl;
   std::cout << result1->to_string() << std::endl;
   std::cout << result2->to_string() << std::endl;
@@ -73,10 +75,10 @@ int main()
   DoubleArrayAlt *result8 = TakeAlt(doubleArrayAltWithNulls, intArrayAltWithNulls);
 
   std::cout << "Take with alternate implementation:" << std::endl;
-  std::cout << result1->to_string() << std::endl;
-  std::cout << result2->to_string() << std::endl;
-  std::cout << result3->to_string() << std::endl;
-  std::cout << result4->to_string() << std::endl;
+  std::cout << result5->to_string() << std::endl;
+  std::cout << result6->to_string() << std::endl;
+  std::cout << result7->to_string() << std::endl;
+  std::cout << result8->to_string() << std::endl;
 
   // printSum(doubArray);
   // printSum(intArray);

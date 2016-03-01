@@ -63,6 +63,10 @@ public:
     return null_count_;
   }
 
+  bool no_nulls() {
+    return null_count_ == 0;
+  }
+
   // doesn't do null check
   value_type get(int32_t slotNumber) {
     return child_array_->get(slotNumber);
