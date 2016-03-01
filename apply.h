@@ -1,12 +1,16 @@
 #include "builder.h"
 #include "operation.h"
+#include "timer.h"
 
 namespace arrow {
 
 template<typename ArrayType, typename OperationType>
 class GetOperation : public Operation<OperationType> {
 public:
-  explicit GetOperation(Array<ArrayType>* array, OperationType* next) : array_(array), Operation<OperationType>(next) {}
+  typedef typename OperationType::BuilderType BuilderType;
+
+  explicit GetOperation(Array<ArrayType>* array, OperationType* next) : array_(array), 
+                                                                        Operation<OperationType>(next) {}
 
   void step(uint32_t slotNumber) {
     this->next_->step(array_->get(slotNumber));
@@ -19,14 +23,12 @@ private:
 template<typename ArrayType, typename OperationType>
 class GetOperation<Nullable<ArrayType>, OperationType> : public Operation<OperationType> {
 public:
-  explicit GetOperation(Array<Nullable<ArrayType > >* array, OperationType* next) : array_(array), Operation<OperationType>(next) {}
+  typedef typename OperationType::BuilderType BuilderType;
+  explicit GetOperation(Array<Nullable<ArrayType > >* array, OperationType* next) : array_(array), 
+                                                                                    Operation<OperationType>(next) {}
 
   void step(uint32_t slotNumber) {
-    if (array_->is_null(slotNumber)) {
-      this->next_->skip();
-    } else {
-      this->next_->step(array_->get(slotNumber));
-    }
+    (array_->is_null(slotNumber)) ? this->next_->skip() : this->next_->step(array_->get(slotNumber));
   }
 
 private:

@@ -50,13 +50,10 @@ public:
   typedef Array<T> ChildArrayType;
   typedef typename T::value_type value_type;
 
-  Array(ChildArrayType* child_array, bool* null_bitmask) : child_array_(child_array),
+  Array(ChildArrayType* child_array, bool* null_bitmask, int32_t null_count) : child_array_(child_array),
                                                            length_(child_array->length()), 
                                                            null_bitmask_(null_bitmask),
-                                                           null_count_(0) {
-    for (int slotNumber = 0; slotNumber < length_; slotNumber++) {
-      null_count_ += null_bitmask_[slotNumber];
-    }
+                                                           null_count_(null_count) {
   }
 
   int32_t null_count() {

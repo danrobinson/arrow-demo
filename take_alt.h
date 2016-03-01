@@ -7,8 +7,8 @@ template<typename T, typename U>
 ArrayAlt<T>* TakeAlt(ArrayAlt<T>* arr, ArrayAlt<U>* indexArr) {
   int32_t length = indexArr->length();
   ArrayBuilderAlt<T>* builder = new ArrayBuilderAlt<T>(length);
-  if (arr->null_count()==0) {
-    if (indexArr->null_count()==0) {
+  if (arr->no_nulls()) {
+    if (indexArr->no_nulls()) {
       for (int32_t slotNumber = 0; slotNumber < length; slotNumber++) {
         builder->add(arr->get(indexArr->get(slotNumber)));
       }
@@ -23,13 +23,13 @@ ArrayAlt<T>* TakeAlt(ArrayAlt<T>* arr, ArrayAlt<U>* indexArr) {
     }
   } else {
     int32_t index;
-    if (indexArr->null_count()==0) {
+    if (indexArr->no_nulls()) {
       for (int32_t slotNumber = 0; slotNumber < length; slotNumber++) {
         index = indexArr->get(slotNumber);
         if (arr->is_null(index)) {
           builder->add_null();
         } else {
-          builder->add(arr->get(indexArr->get(index)));
+          builder->add(arr->get(index));
         }
       }
     } else {
@@ -42,7 +42,7 @@ ArrayAlt<T>* TakeAlt(ArrayAlt<T>* arr, ArrayAlt<U>* indexArr) {
           if (arr->is_null(index)) {
             builder->add_null();
           } else {
-            builder->add(arr->get(indexArr->get(index)));
+            builder->add(arr->get(index));
           }
         }
       }

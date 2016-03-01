@@ -1,5 +1,5 @@
 #include "builder.h"
-#include "apply.h" // foreach, get_from, and b
+#include "apply.h" // foreach, get_from, append_to, and skip
 
 namespace arrow {
 
@@ -20,7 +20,7 @@ public:
 template<typename T, typename U>
 using TakeReturnType = typename std::conditional<is_nullable<T>::value || !is_nullable<U>::value, T, Nullable<T> >::type;
 
-// setup
+// Take function called by user
 template<typename T, typename U, typename V = TakeReturnType<T, U> >
 Array<V>* Take(Array<T>* arr, Array<U>* indexArr) {
   auto *builder = new ArrayBuilder<V>(indexArr->length());

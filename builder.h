@@ -1,7 +1,8 @@
-#include "arrays.h"
 #ifndef BUILDER_H_
 #define BUILDER_H_
 
+#include "arrays.h"
+#include "timer.h"
 
 namespace arrow {
 
@@ -10,6 +11,7 @@ class ArrayBuilder
 {
 public:
   typedef typename T::value_type value_type;
+  typedef ArrayBuilder<T> BuilderType;
 
   ArrayBuilder(int32_t length) : length_(length) {
     offset_ = 0;
@@ -27,7 +29,8 @@ public:
   }
 
   Array<T>* build() {
-    return new Array<T>(values_, length_);
+    Array<T>* newArray = new Array<T>(values_, length_);
+    return newArray;
   }
 
   void step(value_type value) {
@@ -45,11 +48,13 @@ class ArrayBuilder<Nullable<T> >
 {
 public:
   typedef typename T::value_type value_type;
+  typedef ArrayBuilder<Nullable<T> > BuilderType;
 
   ArrayBuilder(int32_t length) : length_(length),
                                  offset_(0),
                                  childBuilder_(new ArrayBuilder<T>(length)),
-                                 nulls_(new bool[length]) {}
+                                 nulls_(new bool[length]),
+                                 null_count_(0) {}
 
   void add(value_type value) {
     nulls_[offset_++] = false;
@@ -58,6 +63,7 @@ public:
 
   void add_null() {
     nulls_[offset_++] = true;
+    null_count_++;
     childBuilder_->increment_offset();
   }
 
@@ -70,7 +76,8 @@ public:
   }
 
   Array<Nullable<T> >* build() {
-    return new Array<Nullable<T> >(childBuilder_->build(), nulls_);
+    Array<Nullable<T> >* newArray = new Array<Nullable<T> >(childBuilder_->build(), nulls_, null_count_);
+    return newArray;
   }
 
   void step(value_type value) {
@@ -86,6 +93,7 @@ private:
   int32_t length_;
   int32_t offset_;
   bool* nulls_;
+  int32_t null_count_;
 };
 
 } // namespace arrow

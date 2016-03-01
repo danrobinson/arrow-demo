@@ -10,13 +10,11 @@ class ArrayAlt
 public:
   typedef typename T::value_type value_type;
 
-  ArrayAlt(value_type* values, bool* null_bitmask, int32_t length) : values_(values),
-                                                           length_(length), 
-                                                           null_bitmask_(null_bitmask),
-                                                           null_count_(0) {
-    for (int slotNumber = 0; slotNumber < length_; slotNumber++) {
-      null_count_ += null_bitmask_[slotNumber];
-    }
+  ArrayAlt(value_type* values, bool* null_bitmask, int32_t length, int32_t null_count = 0) : values_(values),
+                                                                                             length_(length), 
+                                                                                             null_bitmask_(null_bitmask)
+                                                                                             {
+    null_count_ = null_count;
   }
 
   value_type get(int32_t slotNumber) {
@@ -25,6 +23,10 @@ public:
 
   bool is_null(int32_t slotNumber) {
     return null_bitmask_[slotNumber];
+  }
+
+  bool no_nulls() {
+    return null_count_ == 0;
   }
 
   std::string to_string() {
