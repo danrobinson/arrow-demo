@@ -43,19 +43,19 @@ uint32_t randInt()
 }
 
 template <typename T, typename U>
-uint32_t templateTest(T* doubArray, U* intArray)
+uint32_t templateTest(const T& doubArray, const U& intArray)
 {
   TimePoint begin = std::chrono::steady_clock::now();
-  auto *result = Take(doubArray, intArray);
+  auto result = Take(doubArray, intArray);
   TimePoint end = std::chrono::steady_clock::now();
 
   return std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
-uint32_t altTest(DoubleArrayAlt* doubleArrayAlt, IntArrayAlt* intArrayAlt)
+uint32_t altTest(const DoubleArrayAlt& doubleArrayAlt, const IntArrayAlt& intArrayAlt)
 {
   TimePoint begin = std::chrono::steady_clock::now();
-  auto *result = TakeAlt(doubleArrayAlt, intArrayAlt);
+  auto result = TakeAlt(doubleArrayAlt, intArrayAlt);
   TimePoint end = std::chrono::steady_clock::now();
 
   return std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
@@ -93,18 +93,15 @@ int main()
   }
 
   // arrays
-  DoubleArray *doubArray = new DoubleArray(doubleValues, ARRAY_LEN);
-  NullableDoubleArray *nullableDoubArray = new NullableDoubleArray(doubArray, bitmask1, nullCount1);
-  IntArray *intArray = new IntArray(intValues, INT_ARRAY_LEN);
-  NullableIntArray *nullableIntArray = new NullableIntArray(intArray, bitmask2, nullCount2);
+  const DoubleArray doubArray(doubleValues, ARRAY_LEN);
+  const NullableDoubleArray nullableDoubArray(doubArray, bitmask1, nullCount1);
+  const IntArray intArray(intValues, INT_ARRAY_LEN);
+  const NullableIntArray nullableIntArray(intArray, bitmask2, nullCount2);
 
-  DoubleArrayAlt *doubleArrayAlt = new DoubleArrayAlt(doubleValues, nullFreeBitmask1, ARRAY_LEN);
-  DoubleArrayAlt *doubleArrayAltWithNulls = new DoubleArrayAlt(doubleValues, bitmask1, ARRAY_LEN, nullCount1);
-  IntArrayAlt *intArrayAlt = new IntArrayAlt(intValues, nullFreeBitmask2, INT_ARRAY_LEN);
-  IntArrayAlt *intArrayAltWithNulls = new IntArrayAlt(intValues, bitmask2, INT_ARRAY_LEN, nullCount2);
-
-  // see take.h for take implementation
-
+  const DoubleArrayAlt doubleArrayAlt(doubleValues, nullFreeBitmask1, ARRAY_LEN);
+  const DoubleArrayAlt doubleArrayAltWithNulls(doubleValues, bitmask1, ARRAY_LEN, nullCount1);
+  const IntArrayAlt intArrayAlt(intValues, nullFreeBitmask2, INT_ARRAY_LEN);
+  const IntArrayAlt intArrayAltWithNulls (intValues, bitmask2, INT_ARRAY_LEN, nullCount2);
 
   struct results {
     public:
@@ -135,11 +132,15 @@ int main()
     altTestResult.both_nullable += altTest(doubleArrayAltWithNulls, intArrayAltWithNulls);
   }
 
-  std::cout << "Take with alternate implementation:" << std::endl;
-  std::cout << altTestResult.to_string() << std::endl;
+  std::cout << INT_ARRAY_LEN << " integers selected from an array of " << ARRAY_LEN << " doubles" << std::endl;
+  std::cout << REPS << " reps" << std::endl;
+  std::cout << "time in nanoseconds" << std::endl << std::endl;
 
   std::cout << "Take using Nullable<T> template:" << std::endl;
   std::cout << templateTestResult.to_string() << std::endl;
+
+  std::cout << "Take with alternate implementation:" << std::endl;
+  std::cout << altTestResult.to_string() << std::endl;
 
   delete[] doubleValues;
   delete[] bitmask1;

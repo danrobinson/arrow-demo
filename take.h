@@ -7,7 +7,7 @@ namespace arrow {
 template<typename T, typename U, typename V>
 class TakeAlgorithm {
 public:
-  explicit TakeAlgorithm(T* arr, U* indexArr, V* builder) {
+  explicit TakeAlgorithm(const T& arr, const U& indexArr, V& builder) {
      // algorithm expressed in continuation-passing style
      for_each(indexArr, 
        get_from(arr, 
@@ -22,10 +22,10 @@ using TakeReturnType = typename std::conditional<is_nullable<T>::value || !is_nu
 
 // Take function called by user
 template<typename T, typename U, typename V = TakeReturnType<T, U> >
-Array<V>* Take(Array<T>* arr, Array<U>* indexArr) {
-  auto *builder = new ArrayBuilder<V>(indexArr->length());
+const Array<V>* Take(const Array<T>& arr, const Array<U>& indexArr) {
+  ArrayBuilder<V> builder(indexArr.length());
   Skip2<TakeAlgorithm>(arr, indexArr, builder);
-  return builder->build();
+  return builder.build();
 }
 
 

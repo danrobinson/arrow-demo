@@ -10,12 +10,10 @@ class ArrayAlt
 public:
   typedef typename T::value_type value_type;
 
-  ArrayAlt(value_type* values, bool* null_bitmask, int32_t length, int32_t null_count = 0) : values_(values),
-                                                                                             length_(length), 
-                                                                                             null_bitmask_(null_bitmask)
-                                                                                             {
-    null_count_ = null_count;
-  }
+  ArrayAlt(const value_type* values, const bool* null_bitmask, const int32_t length, const int32_t null_count = 0) : values_(values),
+                                                                                                                     length_(length), 
+                                                                                                                     null_bitmask_(null_bitmask),
+                                                                                                                     null_count_(null_count) {}
 
   value_type get(int32_t slotNumber) {
     return values_[slotNumber];
@@ -49,10 +47,10 @@ public:
   }
 
 private:
-  value_type* values_;
-  int32_t length_;
-  bool *null_bitmask_;
-  int32_t null_count_;
+  const value_type* values_;
+  const int32_t length_;
+  const bool *null_bitmask_;
+  const int32_t null_count_;
 };
 
 } // namespace arrow

@@ -17,27 +17,26 @@ public:
     values_ = new value_type[length];
   }
 
-  void add(value_type value) {
+  void add(const value_type value) {
     values_[offset_++] = value;
   }
 
-  int32_t length() { return length_; }
+  const int32_t length() { return length_; }
 
   void increment_offset() {
     offset_++;
   }
 
   Array<T>* build() {
-    Array<T>* newArray = new Array<T>(values_, length_);
-    return newArray;
+    return new Array<T>(values_, length_);
   }
 
-  void step(value_type value) {
+  void step(const value_type value) {
     add(value);
   }
 
 private:
-  int32_t length_;
+  const int32_t length_;
   int32_t offset_;
   value_type* values_;
 };
@@ -51,19 +50,19 @@ public:
 
   ArrayBuilder(int32_t length) : length_(length),
                                  offset_(0),
-                                 childBuilder_(new ArrayBuilder<T>(length)),
+                                 childBuilder_(length),
                                  nulls_(new bool[length]),
                                  null_count_(0) {}
 
-  void add(value_type value) {
+  void add(const value_type value) {
     nulls_[offset_++] = false;
-    childBuilder_->add(value);
+    childBuilder_.add(value);
   }
 
   void add_null() {
     nulls_[offset_++] = true;
     null_count_++;
-    childBuilder_->increment_offset();
+    childBuilder_.increment_offset();
   }
 
   int32_t length() {
@@ -75,8 +74,7 @@ public:
   }
 
   Array<Nullable<T> >* build() {
-    Array<Nullable<T> >* newArray = new Array<Nullable<T> >(childBuilder_->build(), nulls_, null_count_);
-    return newArray;
+    return new Array<Nullable<T> >(*childBuilder_.build(), nulls_, null_count_);
   }
 
   void step(value_type value) {
@@ -88,7 +86,7 @@ public:
   }
 
 private:
-  ArrayBuilder<T>* childBuilder_;
+  ArrayBuilder<T> childBuilder_;
   int32_t length_;
   int32_t offset_;
   bool* nulls_;

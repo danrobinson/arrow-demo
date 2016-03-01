@@ -8,11 +8,12 @@ class ArrayBuilderAlt
 public:
   typedef typename T::value_type value_type;
 
-  ArrayBuilderAlt(int32_t length) : length_(length),
-                                    offset_(0),
-                                    nulls_(new bool[length]),
-                                    values_(new value_type[length]),
-                                    null_count_(0) {}
+  ArrayBuilderAlt(const int32_t length) : length_(length),
+                                          offset_(0),
+                                          nulls_(new bool[length]),
+                                          values_(new value_type[length]),
+                                          null_count_(0) {}
+
   void add(value_type value) {
     values_[offset_] = value;
     nulls_[offset_++] = false;
@@ -32,11 +33,11 @@ public:
     offset_++;
   }
 
-  ArrayAlt<T>* build() {
+  const ArrayAlt<T>* build() {
     return new ArrayAlt<T>(values_, nulls_, length_, null_count_);
   }
 private:
-  int32_t length_;
+  const int32_t length_;
   int32_t offset_;
   int32_t null_count_;
   bool* nulls_;
