@@ -6,33 +6,46 @@
 namespace arrow {
 
 template<typename T>
-class ArrayBuilder
+class ArrayBuilder{};
+
+template<typename T>
+class ArrayBuilder<PrimitiveType<T> >
 {
 public:
-  typedef typename T::value_type value_type;
-  typedef ArrayBuilder<T> BuilderType;
+  using array_type = PrimitiveType<T>;
+  using return_type = Array<array_type>;
+  using value_type = typename array_type::value_type;
 
-  ArrayBuilder(int32_t length) : length_(length) {
-    offset_ = 0;
-    values_ = new value_type[length];
-  }
+  ArrayBuilder(int32_t length) : length_(length),
+                                 offset_(0),
+                                 values_(new value_type[length]) {}
 
   void add(const value_type value) {
     values_[offset_++] = value;
   }
 
+  void step(const value_type value) {
+    values_[offset_++] = value;
+  }
+
+  // manually set value at an offset
+  void set(const value_type value, uint32_t offset) {
+    values_[offset] = value;
+  }
+
+  void add_null() { 
+    // SHOULD NEVER BE CALLED. Only here so ignorant algorithms will compile
+    // if code calls this, though, it should be refactored
+  }
+
   const int32_t length() { return length_; }
 
-  void increment_offset() {
-    offset_++;
+  const return_type* build() {
+    return new return_type(values_, length_);
   }
 
-  Array<T>* build() {
-    return new Array<T>(values_, length_);
-  }
-
-  void step(const value_type value) {
-    add(value);
+  const return_type* complete() {
+    return build();
   }
 
 private:
@@ -41,12 +54,17 @@ private:
   value_type* values_;
 };
 
+
+// generic builder for any nullable type
+// this will work for primitives, but I define one for primitives below for a slight efficiency gain
 template<typename T>
 class ArrayBuilder<Nullable<T> >
 {
 public:
-  typedef typename T::value_type value_type;
-  typedef ArrayBuilder<Nullable<T> > BuilderType;
+  using array_type = Nullable<T>;
+  using return_type = Array<array_type>;
+  using child_type = T;
+  using value_type = typename array_type::value_type;
 
   ArrayBuilder(int32_t length) : length_(length),
                                  offset_(0),
@@ -55,38 +73,109 @@ public:
                                  null_count_(0) {}
 
   void add(const value_type value) {
+    childBuilder_.set(value, offset_);
     nulls_[offset_++] = false;
-    childBuilder_.add(value);
   }
 
   void add_null() {
-    nulls_[offset_++] = true;
     null_count_++;
-    childBuilder_.increment_offset();
+    nulls_[offset_++] = true;
+  }
+
+  void step(value_type value) {
+    childBuilder_.set(value, offset_);
+    nulls_[offset_++] = false;
+  }
+
+  void skip() {
+    null_count_++;
+    nulls_[offset_++] = true;
+  }
+
+  void set(const value_type value, uint32_t offset) {
+    childBuilder_.set(value, offset);
+    nulls_[offset] = false;
+  }
+
+
+
+  int32_t length() {
+    return length_;
+  }
+
+  const return_type* build() {
+    return new return_type(*childBuilder_.build(), nulls_, null_count_);
+  }
+
+  const return_type* complete() {
+    return build();
+  }
+
+private:
+  ArrayBuilder<child_type> childBuilder_;
+  int32_t length_;
+  int32_t offset_;
+  bool* nulls_;
+  int32_t null_count_;
+};
+
+// special array builder for nullable primitive types
+// THIS IS NOT NECESSARY but provides a little efficiency benefit
+template<typename T>
+class ArrayBuilder<Nullable<PrimitiveType<T> > >
+{
+public:
+  using child_type = PrimitiveType<T>;
+  using array_type = Nullable<child_type>;
+  using return_type = Array<array_type>;
+  using value_type = typename array_type::value_type;
+
+  ArrayBuilder(int32_t length) : length_(length),
+                                 offset_(0),
+                                 values_(new value_type[length]),
+                                 nulls_(new bool[length]),
+                                 null_count_(0) {}
+
+  void add(const value_type value) {
+    values_[offset_] = value;
+    nulls_[offset_++] = false;
+  }
+
+  void add_null() {
+    null_count_++;
+    nulls_[offset_++] = true;
+  }
+
+  void step(value_type value) {
+    values_[offset_] = value;
+    nulls_[offset_++] = false;
+  }
+
+  void skip() {
+    null_count_++;
+    nulls_[offset_++] = true;
+  }
+
+  void set(const value_type value, uint32_t offset) {
+    values_[offset] = value;
+    nulls_[offset] = false;
   }
 
   int32_t length() {
     return length_;
   }
 
-  void increment_offset() {
-    offset_++;
+  const return_type* build() {
+    Array<child_type> *child_array = new Array<child_type>(values_, length_);
+    return new return_type(*child_array, nulls_, null_count_);
   }
 
-  Array<Nullable<T> >* build() {
-    return new Array<Nullable<T> >(*childBuilder_.build(), nulls_, null_count_);
-  }
-
-  void step(value_type value) {
-    add(value);
-  }
-
-  void skip() {
-    add_null();
+  const return_type* complete() {
+    return build();
   }
 
 private:
-  ArrayBuilder<T> childBuilder_;
+  value_type* values_;
   int32_t length_;
   int32_t offset_;
   bool* nulls_;
@@ -94,5 +183,6 @@ private:
 };
 
 } // namespace arrow
+
 
 #endif

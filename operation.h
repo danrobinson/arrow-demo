@@ -7,7 +7,7 @@ public:
   void skip() {
     next_.skip();
   }
-  
+
 protected:
   OperationType next_;
 };

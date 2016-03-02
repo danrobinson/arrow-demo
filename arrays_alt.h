@@ -1,33 +1,36 @@
-#include "types.h"
 #ifndef ARRAYS_ALT_H
 #define ARRAYS_ALT_H
+#include "types.h"
 
 namespace arrow {
 
 template<typename T>
-class ArrayAlt
+class ArrayAlt {};
+
+template<typename T>
+class ArrayAlt<PrimitiveType<T> >
 {
 public:
-  typedef typename T::value_type value_type;
+  typedef typename PrimitiveType<T>::value_type value_type;
 
   ArrayAlt(const value_type* values, const bool* null_bitmask, const int32_t length, const int32_t null_count = 0) : values_(values),
                                                                                                                      length_(length), 
                                                                                                                      null_bitmask_(null_bitmask),
                                                                                                                      null_count_(null_count) {}
 
-  value_type get(int32_t slotNumber) {
+  const value_type get(int32_t slotNumber) const {
     return values_[slotNumber];
   }
 
-  bool is_null(int32_t slotNumber) {
+  bool is_null(int32_t slotNumber) const {
     return null_bitmask_[slotNumber];
   }
 
-  bool no_nulls() {
+  bool no_nulls() const {
     return null_count_ == 0;
   }
 
-  std::string to_string() {
+  std::string to_string() const {
     std::stringstream s;
     s << "ArrayAlt [";
     for (int32_t slotNumber = 0; slotNumber < length_; slotNumber++) {
@@ -38,11 +41,11 @@ public:
     return s.str();
   }
 
-  int32_t length() {
+  int32_t length() const {
     return length_;
   }
 
-  int32_t null_count() {
+  int32_t null_count() const {
     return null_count_;
   }
 

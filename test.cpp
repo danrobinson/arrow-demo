@@ -1,14 +1,14 @@
 #include <iostream>
 #include <sstream>
 #include "take.h"
+#include "timer.h"
 #include "take_alt.h" // alternate implementation of take
-
 
 using namespace arrow;
 
-#define ARRAY_LEN 10000
-#define INT_ARRAY_LEN 10000
-#define REPS 10
+#define ARRAY_LEN 10
+#define INT_ARRAY_LEN 5
+#define REPS 1
 
 typedef std::chrono::steady_clock::time_point TimePoint;
 
@@ -31,34 +31,15 @@ double randDouble()
     return (double)rand() / RAND_MAX;
 }
 
-// random boolean, 20% of which are true, 80% are false
+// random boolean, 50% true, 50% false
 bool randBool()
 {
-    return (rand() % 5 == 0);
+    return (rand() % 2 == 0);
 }
 
 uint32_t randInt() 
 {
   return rand() % ARRAY_LEN;
-}
-
-template <typename T, typename U>
-uint32_t templateTest(const T& doubArray, const U& intArray)
-{
-  TimePoint begin = std::chrono::steady_clock::now();
-  auto result = Take(doubArray, intArray);
-  TimePoint end = std::chrono::steady_clock::now();
-
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
-}
-
-uint32_t altTest(const DoubleArrayAlt& doubleArrayAlt, const IntArrayAlt& intArrayAlt)
-{
-  TimePoint begin = std::chrono::steady_clock::now();
-  auto result = TakeAlt(doubleArrayAlt, intArrayAlt);
-  TimePoint end = std::chrono::steady_clock::now();
-
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count();
 }
 
 int main()
@@ -103,44 +84,34 @@ int main()
   const IntArrayAlt intArrayAlt(intValues, nullFreeBitmask2, INT_ARRAY_LEN);
   const IntArrayAlt intArrayAltWithNulls (intValues, bitmask2, INT_ARRAY_LEN, nullCount2);
 
-  struct results {
-    public:
-      uint32_t no_nulls;
-      uint32_t nullable_doubles;
-      uint32_t nullable_integers;
-      uint32_t both_nullable;
+  // timer.reset();
+  // for (int32_t i = 0; i < REPS; i++) {
+  auto *result1 = TakeAlt(doubleArrayAlt, intArrayAlt);
+  auto *result2 = TakeAlt(doubleArrayAltWithNulls, intArrayAlt);
+  auto *result3 = TakeAlt(doubleArrayAlt, intArrayAltWithNulls);
+  auto *result4 = TakeAlt(doubleArrayAltWithNulls, intArrayAltWithNulls);
+  // }
+  // std::cout << "Alternate Results" << std::endl;
+  // std::cout << timer.to_string() << std::endl;
 
-      std::string to_string() {
-        std::stringstream ss;
-        ss << "No Nulls: " << no_nulls << std::endl;
-        ss << "Nullable Doubles: " << nullable_doubles << std::endl;
-        ss << "Nullable Integers: " << nullable_integers << std::endl;
-        ss << "Both Nullable: " << both_nullable << std::endl;
-        return ss.str();
-      }
-  } altTestResult, templateTestResult;
+  // timer.reset();
+  // for (int32_t i = 0; i < REPS; i++) {
+  auto *result5 = Take(intArray, doubArray);
+  auto *result6 = Take(intArray, nullableDoubArray);
+  auto *result7 = Take(nullableIntArray, doubArray);
+  auto *result8 = Take(nullableIntArray, nullableDoubArray);
+  // }
+  // std::cout << "Template Test Results" << std::endl;
+  // std::cout << timer.to_string() << std::endl;
 
-  for (int32_t i = 0; i < REPS; i++) {
-    templateTestResult.no_nulls += templateTest(doubArray, intArray);
-    templateTestResult.nullable_doubles += templateTest(nullableDoubArray, intArray);
-    templateTestResult.nullable_integers += templateTest(doubArray, nullableIntArray);
-    templateTestResult.both_nullable += templateTest(nullableDoubArray, nullableIntArray);
-
-    altTestResult.no_nulls += altTest(doubleArrayAlt, intArrayAlt);
-    altTestResult.nullable_doubles += altTest(doubleArrayAltWithNulls, intArrayAlt);
-    altTestResult.nullable_integers += altTest(doubleArrayAlt, intArrayAltWithNulls);
-    altTestResult.both_nullable += altTest(doubleArrayAltWithNulls, intArrayAltWithNulls);
-  }
-
-  std::cout << INT_ARRAY_LEN << " integers selected from an array of " << ARRAY_LEN << " doubles" << std::endl;
-  std::cout << REPS << " reps" << std::endl;
-  std::cout << "time in nanoseconds" << std::endl << std::endl;
-
-  std::cout << "Take using Nullable<T> template:" << std::endl;
-  std::cout << templateTestResult.to_string() << std::endl;
-
-  std::cout << "Take with alternate implementation:" << std::endl;
-  std::cout << altTestResult.to_string() << std::endl;
+  std::cout << result1->to_string() << std::endl;
+  std::cout << result5->to_string() << std::endl;
+  std::cout << result2->to_string() << std::endl;
+  std::cout << result6->to_string() << std::endl;
+  std::cout << result3->to_string() << std::endl;
+  std::cout << result7->to_string() << std::endl;
+  std::cout << result4->to_string() << std::endl;
+  std::cout << result8->to_string() << std::endl;
 
   delete[] doubleValues;
   delete[] bitmask1;

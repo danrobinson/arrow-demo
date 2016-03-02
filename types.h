@@ -30,6 +30,12 @@ public:
   static const bool value = true;
 };
 
+template<typename T>
+using nullify = typename std::conditional<is_nullable<T>::value, T, Nullable<T> >::type;
+
+template<typename T, typename U>
+using propagate_null = typename std::conditional<is_nullable<T>::value, nullify<U>, U>::type;
+
 } // namespace arrow
 
 #endif

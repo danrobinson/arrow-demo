@@ -1,34 +1,21 @@
 #include "builder.h"
 #include "apply.h" // foreach, get_from, append_to, and skip
+#include "take_alt.h"
+#include "timer.h"
+#include "skip.h"
 
 namespace arrow {
 
-// implementation of algorithm
-template<typename T, typename U, typename V>
-class TakeAlgorithm {
-public:
-  explicit TakeAlgorithm(const T& arr, const U& indexArr, V& builder) {
-     // algorithm expressed in continuation-passing style
-     for_each(indexArr, 
-       get_from(arr, 
-       append_to(builder)));
-  }
-};
 
-// trick for getting the return type of Take
-// return type is a nullable version of T iff either T or U is nullable
-template<typename T, typename U>
-using TakeReturnType = typename std::conditional<is_nullable<T>::value || !is_nullable<U>::value, T, Nullable<T> >::type;
+// trick for getting the type of the array returned by Take
+// return type is nullable iff one of the arrays given to it is nullable
+template<typename index_type, typename array_type>
+using TakeReturnType = MapReturnType<GetOperation, index_type, Array<array_type> >;
 
 // Take function called by user
-template<typename T, typename U, typename V = TakeReturnType<T, U> >
-const Array<V>* Take(const Array<T>& arr, const Array<U>& indexArr) {
-  ArrayBuilder<V> builder(indexArr.length());
-  Skip2<TakeAlgorithm>(arr, indexArr, builder);
-  return builder.build();
+template<typename index_type, typename array_type, typename return_type = TakeReturnType<index_type, array_type> >
+const Array<return_type>* Take(const Array<index_type>& index_array, const Array<array_type>& array) {
+  return map<GetOperation>(index_array, array);
 }
-
-
-
 
 } // namespace arrow

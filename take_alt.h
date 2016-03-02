@@ -1,12 +1,14 @@
+#ifndef TAKE_ALT_H
+#define TAKE_ALT_H
 #include "builder_alt.h"
+#include "timer.h"
 
 namespace arrow {
 
 // monolithic function
-template<typename T, typename U>
-const ArrayAlt<T>* TakeAlt(ArrayAlt<T> arr, ArrayAlt<U> indexArr) {
-  int32_t length = indexArr.length();
-  ArrayBuilderAlt<T> builder(length);
+template<typename T, typename U, typename V>
+void CalculateTakeAlt(const T& arr, const U& indexArr, V builder) {
+  const int32_t length = indexArr.length();
   if (arr.no_nulls()) {
     if (indexArr.no_nulls()) {
       for (int32_t slotNumber = 0; slotNumber < length; slotNumber++) {
@@ -33,6 +35,7 @@ const ArrayAlt<T>* TakeAlt(ArrayAlt<T> arr, ArrayAlt<U> indexArr) {
         }
       }
     } else {
+      timer.current.start();
       for (int32_t slotNumber = 0; slotNumber < length; slotNumber++) {
         if (indexArr.is_null(slotNumber)) {
           builder.add_null();
@@ -48,8 +51,20 @@ const ArrayAlt<T>* TakeAlt(ArrayAlt<T> arr, ArrayAlt<U> indexArr) {
       }
     }
   }
-  return builder.build();
 };
+
+template<typename T, typename U>
+const ArrayAlt<T>* TakeAlt(const ArrayAlt<T>& arr, const ArrayAlt<U>& indexArr) {
+  timer.current.start();
+  int32_t length = indexArr.length();
+  ArrayBuilderAlt<T> builder(length);
+  CalculateTakeAlt(arr, indexArr, builder);
+  const ArrayAlt<T>* result = builder.build();
+  timer.current.finish();
+  return result;
+}
 
 
 } // namespace arrow
+
+#endif

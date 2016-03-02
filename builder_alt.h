@@ -1,12 +1,18 @@
+#ifndef BUILDER_ALT_H
+#define BUILDER_ALT_H
+
 #include "arrays_alt.h"
 
 namespace arrow {
 
 template<typename T>
-class ArrayBuilderAlt
+class ArrayBuilderAlt {};
+
+template<typename T>
+class ArrayBuilderAlt<PrimitiveType<T> >
 {
 public:
-  typedef typename T::value_type value_type;
+  typedef typename PrimitiveType<T>::value_type value_type;
 
   ArrayBuilderAlt(const int32_t length) : length_(length),
                                           offset_(0),
@@ -14,27 +20,22 @@ public:
                                           values_(new value_type[length]),
                                           null_count_(0) {}
 
-  void add(value_type value) {
+  void add(const value_type value) {
     values_[offset_] = value;
     nulls_[offset_++] = false;
-    
   }
 
   void add_null() {
-    nulls_[offset_++] = true;
     null_count_++;
+    nulls_[offset_++] = true;
   }
 
   int32_t length() {
     return length_;
   }
 
-  void increment_offset() {
-    offset_++;
-  }
-
-  const ArrayAlt<T>* build() {
-    return new ArrayAlt<T>(values_, nulls_, length_, null_count_);
+  const ArrayAlt<PrimitiveType<T> >* build() {
+    return new ArrayAlt<PrimitiveType<T> >(values_, nulls_, length_, null_count_);
   }
 private:
   const int32_t length_;
@@ -45,3 +46,5 @@ private:
 };
 
 } // namespace arrow
+
+#endif
