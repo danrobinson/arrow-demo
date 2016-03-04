@@ -14,22 +14,22 @@ class ArrayBuilder<PrimitiveType<T> >
 public:
   using array_type = PrimitiveType<T>;
   using return_type = Array<array_type>;
-  using value_type = typename array_type::value_type;
+  using c_type = typename array_type::c_type;
 
   ArrayBuilder(int32_t length) : length_(length),
                                  offset_(0),
-                                 values_(new value_type[length]) {}
+                                 values_(new c_type[length]) {}
 
-  void add(const value_type value) {
+  void add(const c_type value) {
     values_[offset_++] = value;
   }
 
-  void step(const value_type value) {
+  void step(const c_type value) {
     values_[offset_++] = value;
   }
 
   // manually set value at an offset
-  void set(const value_type value, uint32_t offset) {
+  void set(const c_type value, uint32_t offset) {
     values_[offset] = value;
   }
 
@@ -51,7 +51,7 @@ public:
 private:
   const int32_t length_;
   int32_t offset_;
-  value_type* values_;
+  c_type* values_;
 };
 
 
@@ -64,7 +64,7 @@ public:
   using array_type = Nullable<T>;
   using return_type = Array<array_type>;
   using child_type = T;
-  using value_type = typename array_type::value_type;
+  using c_type = typename array_type::c_type;
 
   ArrayBuilder(int32_t length) : length_(length),
                                  offset_(0),
@@ -72,7 +72,7 @@ public:
                                  nulls_(new bool[length]),
                                  null_count_(0) {}
 
-  void add(const value_type value) {
+  void add(const c_type value) {
     childBuilder_.set(value, offset_);
     nulls_[offset_++] = false;
   }
@@ -82,7 +82,7 @@ public:
     nulls_[offset_++] = true;
   }
 
-  void step(value_type value) {
+  void step(c_type value) {
     childBuilder_.set(value, offset_);
     nulls_[offset_++] = false;
   }
@@ -92,7 +92,7 @@ public:
     nulls_[offset_++] = true;
   }
 
-  void set(const value_type value, uint32_t offset) {
+  void set(const c_type value, uint32_t offset) {
     childBuilder_.set(value, offset);
     nulls_[offset] = false;
   }
@@ -128,15 +128,15 @@ public:
   using child_type = PrimitiveType<T>;
   using array_type = Nullable<child_type>;
   using return_type = Array<array_type>;
-  using value_type = typename array_type::value_type;
+  using c_type = typename array_type::c_type;
 
   ArrayBuilder(int32_t length) : length_(length),
                                  offset_(0),
-                                 values_(new value_type[length]),
+                                 values_(new c_type[length]),
                                  nulls_(new bool[length]),
                                  null_count_(0) {}
 
-  void add(const value_type value) {
+  void add(const c_type value) {
     values_[offset_] = value;
     nulls_[offset_++] = false;
   }
@@ -146,7 +146,7 @@ public:
     nulls_[offset_++] = true;
   }
 
-  void step(value_type value) {
+  void step(c_type value) {
     values_[offset_] = value;
     nulls_[offset_++] = false;
   }
@@ -156,7 +156,7 @@ public:
     nulls_[offset_++] = true;
   }
 
-  void set(const value_type value, uint32_t offset) {
+  void set(const c_type value, uint32_t offset) {
     values_[offset] = value;
     nulls_[offset] = false;
   }
@@ -175,7 +175,7 @@ public:
   }
 
 private:
-  value_type* values_;
+  c_type* values_;
   int32_t length_;
   int32_t offset_;
   bool* nulls_;

@@ -5,8 +5,8 @@ namespace arrow {
 // Sum
 
 template<typename T>
-typename T::value_type CalculateSum(Array<T>& arr) {
-  typename T::value_type result = 0;
+typename T::c_type CalculateSum(Array<T>& arr) {
+  typename T::c_type result = 0;
   int32_t length = arr.length();
   for (int32_t i = 0; i < length; i++) {
     result += arr.get(i, 0);
@@ -15,12 +15,12 @@ typename T::value_type CalculateSum(Array<T>& arr) {
 }
 
 template<typename T>
-typename T::value_type Sum(Array<T>& arr) {
+typename T::c_type Sum(Array<T>& arr) {
   return CalculateSum(arr);
 }
 
 template<typename T>
-typename T::value_type Sum(Array< Nullable<T> >& nullableArr) {
+typename T::c_type Sum(Array< Nullable<T> >& nullableArr) {
   return (nullableArr.null_count() == 0) ? Sum(*nullableArr.child_array()) : CalculateSum(nullableArr);
 }
 

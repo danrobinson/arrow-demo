@@ -4,34 +4,42 @@
 
 namespace arrow {
 
+class BaseArray {
+public:
+  BaseArray(int32_t length, int32_t null_count) : length_(length),
+                                                  null_count_(null_count) {}
+
+  int32_t null_count() const { return null_count_; }
+  bool no_nulls() const { return null_count_ == 0; }
+  int32_t length() const { return length_; }
+protected:
+  const int32_t null_count_;
+  const int32_t length_;
+};
 
 template<typename T>
 class Array {};
 
 template<typename T>
-class Array<PrimitiveType<T> >
+class Array<PrimitiveType<T> > : public BaseArray
 {
 public:
-    using array_type = PrimitiveType<T>;
-    using value_type = typename array_type::value_type;
+    using value_type = PrimitiveType<T>;
+    using c_type = typename value_type::c_type;
 
-    Array(const value_type* values, int32_t length) : length_(length),
-                                                            values_(values) {}
+    Array(const c_type* values, int32_t length) : BaseArray(length, 0),
+                                                  values_(values) {}
 
-    const value_type get(int32_t slotNumber) const {
+    const c_type get(int32_t slotNumber) const {
       return values_[slotNumber];
     }
 
     // implemented so Sum() can work on both
-    const value_type get(int32_t slotNumber, const value_type null_value) const {
+    const c_type get(int32_t slotNumber, const c_type null_value) const {
       return get(slotNumber);
     }
 
-    int32_t length() const { return length_; }
-
-    // these are here so you can write a type-ignorant algorithm if you WANT To
-    int32_t null_count() const { return 0; }
-    int32_t no_nulls() const { return true; }
+    // this is here so you can write a type-ignorant algorithm if you WANT To
     int32_t is_null(int32_t slotNumber) const { return false; }
 
     std::string to_string() const {
@@ -45,43 +53,32 @@ public:
       return s.str();
     }
 
-    const value_type* values() const {
+    const c_type* values() const {
       return values_;
     }
 
 private:
-    const value_type* values_;
-    const int32_t length_;
+    const c_type* values_;
 };
 
 // Nullable array. Declared with reference to any Nullable Type
 // i.e. Array< Nullable< PrimitiveType<uint32_t> > >
 template<typename T>
-class Array< Nullable<T> >
+class Array< Nullable<T> > : public BaseArray
 {
 public:
-  using array_type = Nullable<T>;
-  using value_type = typename array_type::value_type;
+  using value_type = Nullable<T>;
+  using c_type = typename value_type::c_type;
 
-  Array(const Array<T> &child_array, const bool* null_bitmask, const int32_t null_count) : child_array_(child_array),
-                                                                                                 length_(child_array_.length()), 
-                                                                                                 null_bitmask_(null_bitmask),
-                                                                                                 null_count_(null_count) {
-  }
+  Array(const Array<T> &child_array, const bool* null_bitmask, const int32_t null_count) :  BaseArray(child_array.length(), null_count),
+                                                                                            child_array_(child_array),
+                                                                                            null_bitmask_(null_bitmask) {}
 
-  int32_t null_count() const {
-    return null_count_;
-  }
-
-  bool no_nulls() const {
-    return null_count_ == 0;
-  }
-
-  const value_type get(int32_t slotNumber) const {
+  const c_type get(int32_t slotNumber) const {
     return child_array_.get(slotNumber);
   }
 
-  const value_type get(int32_t slotNumber, const value_type null_value) const {
+  const c_type get(int32_t slotNumber, const c_type null_value) const {
     return is_null(slotNumber) ? null_value : child_array_.get(slotNumber, null_value);
   }
 
@@ -104,47 +101,33 @@ public:
     return s.str();
   }
 
-  int32_t length() const {
-    return length_;
-  }
-
 private:
   const Array<T> child_array_;
   const bool* null_bitmask_;
-  const int32_t length_;
-  const int32_t null_count_;
 };
 
 // THIS IS NOT NECESSARY. The above one will work for all types including primitive types
 // But we implement it for a little efficiency benefit
 template<typename T>
-class Array<Nullable<PrimitiveType<T> > >
+class Array<Nullable<PrimitiveType<T> > > : public BaseArray
 {
 public:
   using child_type = PrimitiveType<T>;
-  using array_type = Nullable<child_type>;
-  using value_type = typename array_type::value_type;
+  using value_type = Nullable<child_type>;
+  using c_type = typename value_type::c_type;
 
-  Array(const Array<child_type> &child_array, const bool* null_bitmask, const int32_t null_count) : child_array_(child_array),
-                                                                                           values_(child_array_.values()),
-                                                                                           length_(child_array_.length()), 
-                                                                                           null_bitmask_(null_bitmask),
-                                                                                           null_count_(null_count) {
+  Array(const Array<child_type> &child_array, const bool* null_bitmask, const int32_t null_count) :
+                                                                                           BaseArray(child_array.length(), null_count),
+                                                                                           child_array_(child_array),
+                                                                                           values_(child_array.values()),
+                                                                                           null_bitmask_(null_bitmask) {
   }
 
-  int32_t null_count() const {
-    return null_count_;
-  }
-
-  bool no_nulls() const {
-    return null_count_ == 0;
-  }
-
-  const value_type get(int32_t slotNumber) const {
+  const c_type get(int32_t slotNumber) const {
     return values_[slotNumber];
   }
 
-  const value_type get(int32_t slotNumber, const value_type null_value) const {
+  const c_type get(int32_t slotNumber, const c_type null_value) const {
     return is_null(slotNumber) ? null_value : values_[slotNumber];
   }
 
@@ -167,16 +150,10 @@ public:
     return s.str();
   }
 
-  int32_t length() const {
-    return length_;
-  }
-
 private:
   const Array<child_type> child_array_;
-  const value_type* values_;
+  const c_type* values_;
   const bool* null_bitmask_;
-  const int32_t length_;
-  const int32_t null_count_;
 };
 
 

@@ -11,14 +11,14 @@ template<typename T>
 class ArrayAlt<PrimitiveType<T> >
 {
 public:
-  typedef typename PrimitiveType<T>::value_type value_type;
+  typedef typename PrimitiveType<T>::c_type c_type;
 
-  ArrayAlt(const value_type* values, const bool* null_bitmask, const int32_t length, const int32_t null_count = 0) : values_(values),
+  ArrayAlt(const c_type* values, const bool* null_bitmask, const int32_t length, const int32_t null_count = 0) : values_(values),
                                                                                                                      length_(length), 
                                                                                                                      null_bitmask_(null_bitmask),
                                                                                                                      null_count_(null_count) {}
 
-  const value_type get(int32_t slotNumber) const {
+  const c_type get(int32_t slotNumber) const {
     return values_[slotNumber];
   }
 
@@ -50,7 +50,7 @@ public:
   }
 
 private:
-  const value_type* values_;
+  const c_type* values_;
   const int32_t length_;
   const bool *null_bitmask_;
   const int32_t null_count_;

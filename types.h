@@ -8,13 +8,13 @@ struct DataType {};
 template<typename T>
 struct PrimitiveType : public DataType {
   public:
-    typedef T value_type;
+    typedef T c_type;
 };
 
 template<typename T>
 class Nullable : public DataType {
   public:
-    typedef typename T::value_type value_type;
+    typedef typename T::c_type c_type;
 };
 
 // traits

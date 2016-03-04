@@ -12,15 +12,15 @@ template<typename T>
 class ArrayBuilderAlt<PrimitiveType<T> >
 {
 public:
-  typedef typename PrimitiveType<T>::value_type value_type;
+  typedef typename PrimitiveType<T>::c_type c_type;
 
   ArrayBuilderAlt(const int32_t length) : length_(length),
                                           offset_(0),
                                           nulls_(new bool[length]),
-                                          values_(new value_type[length]),
+                                          values_(new c_type[length]),
                                           null_count_(0) {}
 
-  void add(const value_type value) {
+  void add(const c_type value) {
     values_[offset_] = value;
     nulls_[offset_++] = false;
   }
@@ -42,7 +42,7 @@ private:
   int32_t offset_;
   int32_t null_count_;
   bool* nulls_;
-  value_type* values_;
+  c_type* values_;
 };
 
 } // namespace arrow

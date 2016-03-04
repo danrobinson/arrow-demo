@@ -1,7 +1,6 @@
 #ifndef TAKE_ALT_H
 #define TAKE_ALT_H
 #include "builder_alt.h"
-#include "timer.h"
 
 namespace arrow {
 
@@ -35,7 +34,6 @@ void CalculateTakeAlt(const T& arr, const U& indexArr, V builder) {
         }
       }
     } else {
-      timer.current.start();
       for (int32_t slotNumber = 0; slotNumber < length; slotNumber++) {
         if (indexArr.is_null(slotNumber)) {
           builder.add_null();
@@ -55,12 +53,10 @@ void CalculateTakeAlt(const T& arr, const U& indexArr, V builder) {
 
 template<typename T, typename U>
 const ArrayAlt<T>* TakeAlt(const ArrayAlt<T>& arr, const ArrayAlt<U>& indexArr) {
-  timer.current.start();
   int32_t length = indexArr.length();
   ArrayBuilderAlt<T> builder(length);
   CalculateTakeAlt(arr, indexArr, builder);
   const ArrayAlt<T>* result = builder.build();
-  timer.current.finish();
   return result;
 }
 
