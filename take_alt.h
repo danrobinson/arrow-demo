@@ -52,12 +52,11 @@ void CalculateTakeAlt(const T& arr, const U& indexArr, V builder) {
 };
 
 template<typename T, typename U>
-const ArrayAlt<T>* TakeAlt(const ArrayAlt<T>& arr, const ArrayAlt<U>& indexArr) {
+const ArrayAlt<T> TakeAlt(const ArrayAlt<T>& arr, const ArrayAlt<U>& indexArr) {
   int32_t length = indexArr.length();
   ArrayBuilderAlt<T> builder(length);
   CalculateTakeAlt(arr, indexArr, builder);
-  const ArrayAlt<T>* result = builder.build();
-  return result;
+  return builder.build();
 }
 
 

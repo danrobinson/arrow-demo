@@ -82,10 +82,10 @@ int main()
   timer.reset();
   timer.start();
   for (int32_t i = 0; i < REPS; i++) {
-    Take(intArray, doubArray);
-    Take(intArray, nullableDoubArray);
-    Take(nullableIntArray, doubArray);
-    Take(nullableIntArray, nullableDoubArray);
+    Take(doubArray, intArray);
+    Take(nullableDoubArray, intArray);
+    Take(doubArray, nullableIntArray);
+    Take(nullableDoubArray, nullableIntArray);
   }
   timer.finish();
   std::cout << "Template method: " << REPS << " reps with " << INT_ARRAY_LEN << " indices and " << ARRAY_LEN << " elements" << std::endl;

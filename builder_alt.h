@@ -34,8 +34,8 @@ public:
     return length_;
   }
 
-  const ArrayAlt<PrimitiveType<T> >* build() {
-    return new ArrayAlt<PrimitiveType<T> >(values_, nulls_, length_, null_count_);
+  const ArrayAlt<PrimitiveType<T> > build() {
+    return ArrayAlt<PrimitiveType<T> >(values_, nulls_, length_, null_count_);
   }
 private:
   const int32_t length_;

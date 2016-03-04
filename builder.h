@@ -40,11 +40,11 @@ public:
 
   const int32_t length() { return length_; }
 
-  const return_type* build() {
-    return new return_type(values_, length_);
+  const return_type build() {
+    return return_type(values_, length_);
   }
 
-  const return_type* complete() {
+  const return_type complete() {
     return build();
   }
 
@@ -103,12 +103,8 @@ public:
     return length_;
   }
 
-  const return_type* build() {
-    return new return_type(*childBuilder_.build(), nulls_, null_count_);
-  }
-
-  const return_type* complete() {
-    return build();
+  const return_type build() {
+    return return_type(childBuilder_.build(), nulls_, null_count_);
   }
 
 private:
@@ -165,13 +161,9 @@ public:
     return length_;
   }
 
-  const return_type* build() {
-    Array<child_type> *child_array = new Array<child_type>(values_, length_);
-    return new return_type(*child_array, nulls_, null_count_);
-  }
-
-  const return_type* complete() {
-    return build();
+  const return_type build() {
+    Array<child_type> child_array(values_, length_);
+    return return_type(child_array, nulls_, null_count_);
   }
 
 private:
